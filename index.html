@@ -528,50 +528,50 @@
             });
         }
 
-        // ฟังก์ชันแสดงประวัติข้อมูลสุขภาพ
         function displayHealthHistory() {
             const tableBody = document.getElementById('health-history-table');
-            tableBody.innerHTML = '';
+            tableBody.innerHTML = ''; // เคลียร์ข้อมูลเก่า
 
-            // เรียงข้อมูลตามวันที่จากใหม่ไปเก่า
             healthHistoryData.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-            healthHistoryData.forEach(item => {
-                const row = document.createElement('tr');
-                
-                // แปลงรูปแบบวันที่เป็น dd/mm/yyyy
-                const dateParts = item.date.split('-');
+            healthHistoryData.forEach((record, index) => {
+                const dateParts = record.date.split('-');
                 const formattedDate = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
-                
-                // กำหนดสถานะตามค่า BMI
-                let status = '';
-                let statusClass = '';
-                
-                if (item.bmi < 18.5) {
-                    status = 'น้ำหนักน้อย';
-                    statusClass = 'text-warning';
-                } else if (item.bmi >= 18.5 && item.bmi < 25) {
-                    status = 'ปกติ';
-                    statusClass = 'text-success';
-                } else if (item.bmi >= 25 && item.bmi < 30) {
-                    status = 'น้ำหนักเกิน';
-                    statusClass = 'text-warning';
-                } else {
-                    status = 'อ้วน';
-                    statusClass = 'text-danger';
-                }
 
-                row.innerHTML = `
-                    <td>${formattedDate}</td>
-                    <td>${item.weight}</td>
-                    <td>${item.height}</td>
-                    <td>${item.bmi}</td>
-                    <td class="${statusClass}">${status}</td>
-                `;
-                
-                tableBody.appendChild(row);
-            });
-        }
+            let status = '';
+            let statusClass = '';
+
+            if (record.bmi < 18.5) {
+                status = 'น้ำหนักน้อย';
+                statusClass = 'text-warning';
+            } else if (record.bmi >= 18.5 && record.bmi < 25) {
+                status = 'ปกติ';
+                statusClass = 'text-success';
+            } else if (record.bmi >= 25 && record.bmi < 30) {
+                status = 'น้ำหนักเกิน';
+                statusClass = 'text-warning';
+            } else {
+                status = 'อ้วน';
+                statusClass = 'text-danger';
+            }
+
+        const row = `
+            <tr>
+                <td>${formattedDate}</td>
+                <td>${record.weight}</td>
+                <td>${record.height}</td>
+                <td>${record.bmi}</td>
+                <td class="${statusClass}">${status}</td>
+                <td>
+                    <button class="btn btn-warning btn-sm" onclick="editRecord(${index})">แก้ไข</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteRecord(${index})">ลบ</button>
+                </td>
+            </tr>
+        `;
+
+        tableBody.innerHTML += row;
+    });
+}
 
         // ฟังก์ชันอัปเดตกราฟ BMI
         function updateBmiChart() {

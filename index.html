@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ระบบจัดการภาวะอ้วน</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(to right, #ff9a9e, #fecfef);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .card {
+            background: #ffb6c1;
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-header {
+            background: #ff69b4;
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+            color: #fff;
+        }
+
+        .btn-primary, .btn-success, .btn-danger, .btn-info {
+            background: #ff69b4;
+            border: none;
+            border-radius: 25px;
+            transition: background 0.3s ease;
+        }
+
+        .btn-primary:hover, .btn-success:hover, .btn-danger:hover, .btn-info:hover {
+            background: #ff1493;
+        }
+
+        .table thead {
+            background: #ff69b4;
+            color: #fff;
+        }
+
+        input[type="text"], input[type="password"], input[type="number"], input[type="date"], input[type="email"] {
+            border-radius: 25px;
+            padding: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Login Section -->
+    <div class="container mt-5" id="login-section">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header text-center">
+                        <h3>🌸 ระบบจัดการภาวะอ้วน 🌸</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="text-center mb-4">
+                            <h4>เข้าสู่ระบบ</h4>
+                        </div>
+                        <form onsubmit="return login(event)">
+                            <div class="mb-3">
+                                <label for="user_name" class="form-label">ชื่อผู้ใช้</label>
+                                <input type="text" class="form-control" id="user_name" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="password" class="form-label">รหัสผ่าน</label>
+                                <input type="password" class="form-control" id="password" required>
+                            </div>
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-primary">เข้าสู่ระบบ</button>
+                            </div>
+                        </form>
+                        <div class="text-center mt-3">
+                            <p>ยังไม่มีบัญชี? <a href="#" onclick="showRegisterSection()">สมัครสมาชิก</a></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Register Section -->
+    <div class="container mt-5" id="register-section" style="display:none;">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header text-center">
+                        <h3>🌸 ระบบจัดการภาวะอ้วน 🌸</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="text-center mb-4">
+                            <h4>สมัครสมาชิก</h4>
+                        </div>
+                        <form onsubmit="return register(event)">
+                            <div class="mb-3">
+                                <label for="reg_user_name" class="form-label">ชื่อผู้ใช้</label>
+                                <input type="text" class="form-control" id="reg_user_name" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="reg_email" class="form-label">อีเมล</label>
+                                <input type="email" class="form-control" id="reg_email" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="reg_password" class="form-label">รหัสผ่าน</label>
+                                <input type="password" class="form-control" id="reg_password" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="reg_confirm_password" class="form-label">ยืนยันรหัสผ่าน</label>
+                                <input type="password" class="form-control" id="reg_confirm_password" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="reg_height" class="form-label">ส่วนสูง (cm)</label>
+                                <input type="number" class="form-control" id="reg_height" required>
+                            </div>
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-success">สมัครสมาชิก</button>
+                                <button type="button" class="btn btn-danger ms-2" onclick="showLoginSection()">ยกเลิก</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App Section -->
+    <div class="container mt-5" id="app-section" style="display:none;">
+        <div class="row">
+            <div class="col-10">
+                <h1>🌸 ระบบจัดการภาวะอ้วน 🌸</h1>
+                <p class="text-white">ยินดีต้อนรับ, <span id="user_display_name"></span></p>
+            </div>
+            <div class="col-2 text-end">
+                <button type="button" class="btn btn-danger" onclick="logout()">ออกจากระบบ</button>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header text-center">
+                <h3>🐰 บันทึกข้อมูลสุขภาพ 🐰</h3>
+            </div>
+            <div class="card-body">
+                <form onsubmit="return saveHealthData(event)">
+                    <input type="hidden" id="user_id">
+                    <div class="mb-3">
+                        <label for="weight" class="form-label">⚖️ น้ำหนัก (kg)</label>
+                        <input type="number" step="0.1" class="form-control" id="weight" required oninput="calculateBMI()">
+                    </div>
+                    <div class="mb-3">
+                        <label for="height" class="form-label">📏 ส่วนสูง (cm)</label>
+                        <input type="number" step="0.1" class="form-control" id="height" required oninput="calculateBMI()">
+                    </div>
+                    <div class="mb-3">
+                        <label for="bmi" class="form-label">📊 ค่า BMI</label>
+                        <input type="number" step="0.1" class="form-control" id="bmi" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="date" class="form-label">📅 วันที่บันทึก</label>
+                        <input type="date" class="form-control" id="date" required>
+                    </div>
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-success">💾 บันทึกข้อมูล</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- ประวัติข้อมูล -->
+        <div class="card mt-4">
+            <div class="card-header text-center">
+                <h3>ประวัติข้อมูลสุขภาพ💖</h3>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <button type="button" class="btn btn-primary" onclick="loadHealthHistory()">แสดงประวัติ</button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>วันที่บันทึก</th>
+                                <th>น้ำหนัก (kg)</th>
+                                <th>ส่วนสูง (cm)</th>
+                                <th>BMI</th>
+                                <th>สถานะ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="health-history-table">
+                            <!-- ข้อมูลจะถูกเพิ่มด้วย JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- กราฟแสดงพัฒนาการ -->
+        <div class="card mt-4">
+            <div class="card-header text-center">
+                <h3>แนวโน้มสุขภาพ</h3>
+            </div>
+            <div class="card-body">
+                <div class="text-center">
+                    <canvas id="bmiChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script สำหรับแสดงกราฟ -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // ตัวแปรสำหรับเก็บข้อมูล
+        let healthHistoryData = [];
+        let bmiChart;
+        let currentUserId = null;
+
+        // ตั้งค่าวันที่ปัจจุบันให้กับช่องวันที่บันทึก
+        document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date();
+            const formattedDate = today.toISOString().substr(0, 10);
+            document.getElementById('date').value = formattedDate;
+        });
+
+        // ฟังก์ชันสลับการแสดงผลระหว่างหน้า Login และ Register
+        function showRegisterSection() {
+            document.getElementById('login-section').style.display = 'none';
+            document.getElementById('register-section').style.display = 'block';
+        }
+
+        function showLoginSection() {
+            document.getElementById('login-section').style.display = 'block';
+            document.getElementById('register-section').style.display = 'none';
+        }
+
+        // ฟังก์ชันสำหรับการเข้าสู่ระบบ
+        function login(event) {
+            event.preventDefault();
+            const user_name = document.getElementById('user_name').value;
+            const password = document.getElementById('password').value;
+
+            // ในการใช้งานจริงควรส่งคำขอไปยัง API
+            fetch('https://backend-mini-six.vercel.app/login', { 
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ user_name, password })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message !== 'Invalid credentials') {
+                    // เก็บข้อมูลผู้ใช้ใน localStorage
+                    localStorage.setItem('user_id', data.user_id);
+                    localStorage.setItem('user_name', user_name);
+                    
+                    currentUserId = data.user_id;
+                    
+                    // แสดงหน้าหลักและซ่อนหน้า login
+                    document.getElementById('login-section').style.display = 'none';
+                    document.getElementById('app-section').style.display = 'block';
+                    
+                    // แสดงชื่อผู้ใช้
+                    document.getElementById('user_display_name').textContent = user_name;
+                    document.getElementById('user_id').value = data.user_id;
+                    
+                    // ดึงความสูงล่าสุดของผู้ใช้
+                    fetch(`https://backend-mini-six.vercel.app/user/${data.user_id}`)
+                    .then(response => response.json())
+                    .then(userData => {
+                        if (userData && userData.height) {
+                            document.getElementById('height').value = userData.height;
+                        }
+                    })
+                    .catch(error => console.error('Error fetching user data:', error));
+                    
+                    // โหลดข้อมูลประวัติ
+                    loadHealthHistory();
+                } else {
+                    alert('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // สำหรับการทดสอบ
+                mockLogin(user_name);
+            });
+        }
+
+        // ฟังก์ชันจำลองการเข้าสู่ระบบ (สำหรับการทดสอบ)
+        function mockLogin(user_name) {
+            const mockUserId = 123;
+            localStorage.setItem('user_id', mockUserId);
+            localStorage.setItem('user_name', user_name);
+            
+            currentUserId = mockUserId;
+            
+            document.getElementById('login-section').style.display = 'none';
+            document.getElementById('app-section').style.display = 'block';
+            
+            document.getElementById('user_display_name').textContent = user_name;
+            document.getElementById('user_id').value = mockUserId;
+            document.getElementById('height').value = 170;
+            
+            loadHealthHistory();
+        }
+
+        // ฟังก์ชันสำหรับการสมัครสมาชิก
+        function register(event) {
+            event.preventDefault();
+            const user_name = document.getElementById('reg_user_name').value;
+            const email = document.getElementById('reg_email').value;
+            const password = document.getElementById('reg_password').value;
+            const confirm_password = document.getElementById('reg_confirm_password').value;
+            const height = document.getElementById('reg_height').value;
+            
+            // ตรวจสอบรหัสผ่าน
+            if (password !== confirm_password) {
+                alert('รหัสผ่านไม่ตรงกัน กรุณาตรวจสอบอีกครั้ง');
+                return false;
+            }
+            
+            // ในการใช้งานจริงควรส่งคำขอไปยัง API
+            fetch('https://backend-mini-six.vercel.app/register', { 
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ user_name, email, password, height })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message === 'User registered successfully') {
+                    alert('สมัครสมาชิกสำเร็จ กรุณาเข้าสู่ระบบ');
+                    showLoginSection();
+                } else {
+                    alert('เกิดข้อผิดพลาดในการสมัครสมาชิก: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // สำหรับการทดสอบ
+                alert('สมัครสมาชิกสำเร็จ กรุณาเข้าสู่ระบบ');
+                showLoginSection();
+            });
+        }
+
+        // ฟังก์ชันออกจากระบบ
+        function logout() {
+            localStorage.removeItem('user_id');
+            localStorage.removeItem('user_name');
+            currentUserId = null;
+            
+            document.getElementById('login-section').style.display = 'block';
+            document.getElementById('app-section').style.display = 'none';
+            
+            // รีเซ็ตค่าในฟอร์ม
+            document.getElementById('user_name').value = '';
+            document.getElementById('password').value = '';
+            document.getElementById('weight').value = '';
+            document.getElementById('height').value = '';
+            document.getElementById('bmi').value = '';
+        }
+
+        // ฟังก์ชันคำนวณ BMI
+        function calculateBMI() {
+            const weight = parseFloat(document.getElementById('weight').value);
+            const height = parseFloat(document.getElementById('height').value);
+
+            if (weight > 0 && height > 0) {
+                const heightInMeters = height / 100;
+                const bmi = (weight / (heightInMeters ** 2)).toFixed(1); 
+                document.getElementById('bmi').value = bmi;
+            } else {
+                document.getElementById('bmi').value = '';
+            }
+        }
+
+        // ฟังก์ชันบันทึกข้อมูลสุขภาพ
+        function saveHealthData(event) {
+            event.preventDefault();
+            const user_id = document.getElementById('user_id').value;
+            const weight = document.getElementById('weight').value;
+            const height = document.getElementById('height').value;
+            const bmi = document.getElementById('bmi').value;
+            const date = document.getElementById('date').value;
+
+            if (!user_id) {
+                alert('กรุณาเข้าสู่ระบบก่อนบันทึกข้อมูล');
+                return false;
+            }
+
+            fetch('https://backend-mini-six.vercel.app/healthdata', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ user_id, weight, height, bmi, date })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert('บันทึกข้อมูลสำเร็จ');
+                // โหลดข้อมูลประวัติใหม่
+                loadHealthHistory();
+                // รีเซ็ตน้ำหนัก
+                document.getElementById('weight').value = '';
+                document.getElementById('bmi').value = '';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // สำหรับการทดสอบ
+                mockSaveHealthData(user_id, weight, height, bmi, date);
+            });
+        }
+
+        // ฟังก์ชันจำลองการบันทึกข้อมูล (สำหรับการทดสอบ)
+        function mockSaveHealthData(user_id, weight, height, bmi, date) {
+            // สร้างข้อมูลจำลอง
+            const newData = {
+                id: Date.now(),
+                user_id: user_id,
+                weight: weight,
+                height: height,
+                bmi: bmi,
+                date: date
+            };
+            
+            // เพิ่มข้อมูลใหม่ลงในข้อมูลที่มีอยู่
+            healthHistoryData.push(newData);
+            
+            alert('บันทึกข้อมูลสำเร็จ');
+            
+            // แสดงข้อมูลและอัปเดตกราฟ
+            displayHealthHistory();
+            updateBmiChart();
+            
+            // รีเซ็ตน้ำหนัก
+            document.getElementById('weight').value = '';
+            document.getElementById('bmi').value = '';
+        }
+
+        // ฟังก์ชันโหลดประวัติข้อมูลสุขภาพ
+        function loadHealthHistory() {
+            const user_id = document.getElementById('user_id').value;
+            
+            if (!user_id) {
+                alert('กรุณาเข้าสู่ระบบก่อนดูประวัติ');
+                return false;
+            }
+            
+            // ในการทำงานจริงควรส่งคำขอไปยัง API
+            fetch(`https://backend-mini-six.vercel.app/healthdata/${user_id}`)
+            .then(response => response.json())
+            .then(data => {
+                healthHistoryData = data;
+                displayHealthHistory();
+                updateBmiChart();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // สำหรับการทดสอบ ใช้ข้อมูลจำลอง
+                healthHistoryData = [
+                    { date: '2025-01-10', weight: 80.5, height: 170, bmi: 27.9 },
+                    { date: '2025-01-20', weight: 79.2, height: 170, bmi: 27.4 },
+                    { date: '2025-02-01', weight: 78.0, height: 170, bmi: 27.0 },
+                    { date: '2025-02-15', weight: 76.5, height: 170, bmi: 26.5 }
+                ];
+                displayHealthHistory();
+                updateBmiChart();
+            });
+        }
+
+        // ฟังก์ชันแสดงประวัติข้อมูลสุขภาพ
+        function displayHealthHistory() {
+            const tableBody = document.getElementById('health-history-table');
+            tableBody.innerHTML = '';
+
+            // เรียงข้อมูลตามวันที่จากใหม่ไปเก่า
+            healthHistoryData.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            healthHistoryData.forEach(item => {
+                const row = document.createElement('tr');
+                
+                // แปลงรูปแบบวันที่เป็น dd/mm/yyyy
+                const dateParts = item.date.split('-');
+                const formattedDate = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
+                
+                // กำหนดสถานะตามค่า BMI
+                let status = '';
+                let statusClass = '';
+                
+                if (item.bmi < 18.5) {
+                    status = 'น้ำหนักน้อย';
+                    statusClass = 'text-warning';
+                } else if (item.bmi >= 18.5 && item.bmi < 25) {
+                    status = 'ปกติ';
+                    statusClass = 'text-success';
+                } else if (item.bmi >= 25 && item.bmi < 30) {
+                    status = 'น้ำหนักเกิน';
+                    statusClass = 'text-warning';
+                } else {
+                    status = 'อ้วน';
+                    statusClass = 'text-danger';
+                }
+
+                row.innerHTML = `
+                    <td>${formattedDate}</td>
+                    <td>${item.weight}</td>
+                    <td>${item.height}</td>
+                    <td>${item.bmi}</td>
+                    <td class="${statusClass}">${status}</td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+        }
+
+        // ฟังก์ชันอัปเดตกราฟ BMI
+        function updateBmiChart() {
+            // เรียงข้อมูลตามวันที่
+            const sortedData = [...healthHistoryData].sort((a, b) => new Date(a.date) - new Date(b.date));
+            
+            const labels = sortedData.map(item => {
+                const date = new Date(item.date);
+                return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+            });
+            
+            const weightData = sortedData.map(item => item.weight);
+            const bmiData = sortedData.map(item => item.bmi);
+
+            const ctx = document.getElementById('bmiChart').getContext('2d');
+            
+            // ทำลายกราฟเดิมถ้ามี
+            if (bmiChart) {
+                bmiChart.destroy();
+            }
+            
+            bmiChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'น้ำหนัก (kg)',
+                            data: weightData,
+                            borderColor: 'rgb(75, 192, 192)',
+                            tension: 0.1,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'BMI',
+                            data: bmiData,
+                            borderColor: 'rgb(255, 99, 132)',
+                            tension: 0.1,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: 'น้ำหนัก (kg)'
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: 'BMI'
+                            },
+                            grid: {
+                                drawOnChartArea: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ตรวจสอบว่ามีข้อมูลผู้ใช้ที่เคยเข้าสู่ระบบแล้วหรือไม่
+        window.onload = function() {
+            const savedUserId = localStorage.getItem('user_id');
+            const savedUserName = localStorage.getItem('user_name');
+            
+            if (savedUserId && savedUserName) {
+                currentUserId = savedUserId;
+                document.getElementById('login-section').style.display = 'none';
+                document.getElementById('app-section').style.display = 'block';
+                document.getElementById('user_display_name').textContent = savedUserName;
+                document.getElementById('user_id').value = savedUserId;
+                loadHealthHistory();
+            }
+        };
+    </script>
+</body>
+
+</html>

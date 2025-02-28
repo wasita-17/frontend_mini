@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>ระบบจัดการภาวะอ้วน</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -19,7 +20,7 @@
         }
 
         .card {
-            background: #ffb6c1;
+            background: #fff;
             border: none;
             border-radius: 20px;
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
@@ -32,14 +33,14 @@
             color: #fff;
         }
 
-        .btn-primary, .btn-success, .btn-danger, .btn-info {
+        .btn-custom {
             background: #ff69b4;
             border: none;
             border-radius: 25px;
             transition: background 0.3s ease;
         }
 
-        .btn-primary:hover, .btn-success:hover, .btn-danger:hover, .btn-info:hover {
+        .btn-custom:hover {
             background: #ff1493;
         }
 
@@ -120,6 +121,10 @@
                                 <input type="password" class="form-control" id="reg_confirm_password" required>
                             </div>
                             <div class="mb-3">
+                                <label for="reg_weight" class="form-label">น้ำหนัก (kg)</label>
+                                <input type="number" class="form-control" id="reg_weight" required>
+                            </div>
+                            <div class="mb-3">
                                 <label for="reg_height" class="form-label">ส่วนสูง (cm)</label>
                                 <input type="number" class="form-control" id="reg_height" required>
                             </div>
@@ -134,102 +139,76 @@
         </div>
     </div>
 
-    <!-- Main App Section -->
-    <div class="container mt-5" id="app-section" style="display:none;">
-        <div class="row">
-            <div class="col-10">
-                <h1>🌸 ระบบจัดการภาวะอ้วน 🌸</h1>
-                <p class="text-white">ยินดีต้อนรับ, <span id="user_display_name"></span></p>
+    <body>
+        <div class="container mt-5" id="app-section">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="text-center">🌸 ระบบจัดการภาวะอ้วน 🌸</h1>
+                <button class="btn btn-danger" onclick="logout()">ออกจากระบบ</button>
             </div>
-            <div class="col-2 text-end">
-                <button type="button" class="btn btn-danger" onclick="logout()">ออกจากระบบ</button>
-            </div>
-        </div>
-
-        <div class="card mt-4">
-            <div class="card-header text-center">
-                <h3>🐰 บันทึกข้อมูลสุขภาพ 🐰</h3>
-            </div>
-            <div class="card-body">
-                <form onsubmit="return saveHealthData(event)">
-                    <input type="hidden" id="user_id">
-                    <div class="mb-3">
-                        <label for="weight" class="form-label">⚖️ น้ำหนัก (kg)</label>
-                        <input type="number" step="0.1" class="form-control" id="weight" required oninput="calculateBMI()">
-                    </div>
-                    <div class="mb-3">
-                        <label for="height" class="form-label">📏 ส่วนสูง (cm)</label>
-                        <input type="number" step="0.1" class="form-control" id="height" required oninput="calculateBMI()">
-                    </div>
-                    <div class="mb-3">
-                        <label for="bmi" class="form-label">📊 ค่า BMI</label>
-                        <input type="number" step="0.1" class="form-control" id="bmi" readonly>
-                    </div>
-                    <div class="mb-3">
-                        <label for="date" class="form-label">📅 วันที่บันทึก</label>
-                        <input type="date" class="form-control" id="date" required>
-                    </div>
-                    <div class="text-center">
-                        <button type="submit" class="btn btn-success">💾 บันทึกข้อมูล</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- ประวัติข้อมูล -->
-        <div class="card mt-4">
-            <div class="card-header text-center">
-                <h3>ประวัติข้อมูลสุขภาพ💖</h3>
-            </div>
-            <div class="card-body">
-                <div class="mb-3">
-                    <button type="button" class="btn btn-primary" onclick="loadHealthHistory()">แสดงประวัติ</button>
+            <ul class="nav nav-tabs" id="myTabs">
+                <li class="nav-item">
+                    <a class="nav-link active" data-bs-toggle="tab" href="#record">บันทึกข้อมูล</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#history">ประวัติ</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#chart">กราฟ</a>
+                </li>
+            </ul>
+            <div class="tab-content mt-3">
+                <!-- บันทึกข้อมูล -->
+                <div class="tab-pane fade show active" id="record">
+                    <h3 class="text-center">🐰 บันทึกข้อมูลสุขภาพ 🐰</h3>
+                    <form onsubmit="return saveHealthData(event)">
+                        <div class="mb-3">
+                            <label for="weight" class="form-label">น้ำหนัก (kg)</label>
+                            <input type="number" class="form-control" id="weight" required oninput="calculateBMI()">
+                        </div>
+                        <div class="mb-3">
+                            <label for="height" class="form-label">ส่วนสูง (cm)</label>
+                            <input type="number" class="form-control" id="height" required oninput="calculateBMI()">
+                        </div>
+                        <div class="mb-3">
+                            <label for="bmi" class="form-label">BMI</label>
+                            <input type="number" class="form-control" id="bmi" required readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="date" class="form-label">DATE</label>
+                            <input type="date" class="form-control" id="date" required>
+                        </div>
+                        <button type="submit" class="btn btn-success">บันทึกข้อมูล</button>
+                    </form>
                 </div>
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover">
-                        <thead>
-                            <tr>
-                                <th>วันที่บันทึก</th>
-                                <th>น้ำหนัก (kg)</th>
-                                <th>ส่วนสูง (cm)</th>
-                                <th>BMI</th>
-                                <th>สถานะ</th>
-                            </tr>
-                        </thead>
-                        <tbody id="health-history-table">
-                            <!-- ข้อมูลจะถูกเพิ่มด้วย JavaScript -->
-                        </tbody>
+                <!-- ประวัติข้อมูล -->
+                <div class="tab-pane fade" id="history">
+                    <h3 class="text-center">ประวัติข้อมูลสุขภาพ</h3>
+                    <button class="btn btn-primary" onclick="loadHealthHistory()">แสดงประวัติ</button>
+                    <table class="table mt-3">
+                        <thead><tr><th>วันที่</th><th>น้ำหนัก</th><th>ส่วนสูง</th><th>BMI</th></tr></thead>
+                        <tbody id="health-history-table"></tbody>
                     </table>
                 </div>
-            </div>
-        </div>
-
-        <!-- กราฟแสดงพัฒนาการ -->
-        <div class="card mt-4">
-            <div class="card-header text-center">
-                <h3>แนวโน้มสุขภาพ</h3>
-            </div>
-            <div class="card-body">
-                <div class="text-center">
-                    <canvas id="bmiChart" width="400" height="200"></canvas>
+                <!-- กราฟ -->
+                <div class="tab-pane fade" id="chart">
+                    <h3 class="text-center">แนวโน้มสุขภาพ</h3>
+                    <canvas id="bmiChart"></canvas>
                 </div>
             </div>
         </div>
-    </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    </body>
+    </html>
+    
 
     <!-- Script สำหรับแสดงกราฟ -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        // ตัวแปรสำหรับเก็บข้อมูล
-        let healthHistoryData = [];
-        let bmiChart;
-        let currentUserId = null;
-
         // ตั้งค่าวันที่ปัจจุบันให้กับช่องวันที่บันทึก
         document.addEventListener('DOMContentLoaded', function() {
-            const today = new Date();
-            const formattedDate = today.toISOString().substr(0, 10);
-            document.getElementById('date').value = formattedDate;
+            const today = new Date().toISOString().substr(0, 10);
+            const dateInput = document.getElementById('date');
+            if (dateInput) dateInput.value = today;
         });
 
         // ฟังก์ชันสลับการแสดงผลระหว่างหน้า Login และ Register
@@ -297,24 +276,6 @@
             });
         }
 
-        // ฟังก์ชันจำลองการเข้าสู่ระบบ (สำหรับการทดสอบ)
-        function mockLogin(user_name) {
-            const mockUserId = 123;
-            localStorage.setItem('user_id', mockUserId);
-            localStorage.setItem('user_name', user_name);
-            
-            currentUserId = mockUserId;
-            
-            document.getElementById('login-section').style.display = 'none';
-            document.getElementById('app-section').style.display = 'block';
-            
-            document.getElementById('user_display_name').textContent = user_name;
-            document.getElementById('user_id').value = mockUserId;
-            document.getElementById('height').value = 170;
-            
-            loadHealthHistory();
-        }
-
         // ฟังก์ชันสำหรับการสมัครสมาชิก
         function register(event) {
             event.preventDefault();
@@ -331,12 +292,12 @@
             }
             
             // ในการใช้งานจริงควรส่งคำขอไปยัง API
-            fetch('https://backend-mini-six.vercel.app/register', { 
+            fetch('https://backend-mini-six.vercel.app//Users', { 
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ user_name, email, password, height })
+                body: JSON.stringify({ user_name, email, password, height,weight })
             })
             .then(response => response.json())
             .then(data => {
@@ -422,33 +383,6 @@
                 mockSaveHealthData(user_id, weight, height, bmi, date);
             });
         }
-
-        // ฟังก์ชันจำลองการบันทึกข้อมูล (สำหรับการทดสอบ)
-        function mockSaveHealthData(user_id, weight, height, bmi, date) {
-            // สร้างข้อมูลจำลอง
-            const newData = {
-                id: Date.now(),
-                user_id: user_id,
-                weight: weight,
-                height: height,
-                bmi: bmi,
-                date: date
-            };
-            
-            // เพิ่มข้อมูลใหม่ลงในข้อมูลที่มีอยู่
-            healthHistoryData.push(newData);
-            
-            alert('บันทึกข้อมูลสำเร็จ');
-            
-            // แสดงข้อมูลและอัปเดตกราฟ
-            displayHealthHistory();
-            updateBmiChart();
-            
-            // รีเซ็ตน้ำหนัก
-            document.getElementById('weight').value = '';
-            document.getElementById('bmi').value = '';
-        }
-
         // ฟังก์ชันโหลดประวัติข้อมูลสุขภาพ
         function loadHealthHistory() {
             const user_id = document.getElementById('user_id').value;
@@ -457,27 +391,6 @@
                 alert('กรุณาเข้าสู่ระบบก่อนดูประวัติ');
                 return false;
             }
-            
-            // ในการทำงานจริงควรส่งคำขอไปยัง API
-            fetch(`https://backend-mini-six.vercel.app/healthdata/${user_id}`)
-            .then(response => response.json())
-            .then(data => {
-                healthHistoryData = data;
-                displayHealthHistory();
-                updateBmiChart();
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                // สำหรับการทดสอบ ใช้ข้อมูลจำลอง
-                healthHistoryData = [
-                    { date: '2025-01-10', weight: 80.5, height: 170, bmi: 27.9 },
-                    { date: '2025-01-20', weight: 79.2, height: 170, bmi: 27.4 },
-                    { date: '2025-02-01', weight: 78.0, height: 170, bmi: 27.0 },
-                    { date: '2025-02-15', weight: 76.5, height: 170, bmi: 26.5 }
-                ];
-                displayHealthHistory();
-                updateBmiChart();
-            });
         }
 
         // ฟังก์ชันแสดงประวัติข้อมูลสุขภาพ
